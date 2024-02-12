@@ -5,20 +5,20 @@ from .views import register_user, LoginView, LogoutView, LoginWithOTP
 from .views import ValidateOTP
 from .views  import SaveResultOfStudentsView
 from .views import SchoolSettingsView
-from rest_framework.schemas import get_schema_view
-from .signals import AccountActivationView
-from .savers.faculty import SaveFacultyView
+from  rest_framework.schemas import get_schema_view
+from . signals import AccountActivationView
+from . savers.faculty import SaveFacultyView, DeleteFacultyView
 from . savers.faculty import SaveFacultyView
-from . savers.department import SaveDepartmentView, ListDepartmentView
-from . savers.programme import SaveProgrammeView
+from . savers.department import SaveDepartmentView, ListDepartmentView,DepartmentUpdateView,DeleteDepartmentView
+from . savers.programme import SaveProgrammeView, ListProgrammeView,ProgrammeUpdateView, DeleteProgrammeView
 from . savers.semester import SaveSemesterView
 from . savers.studentrecords import SaveStudentRecordsView, GetStudentInformationLists
 from . savers.courses import SaveCoursesView 
-from . savers.session import SaveSessionView
+from . savers.session import SaveSessionView, SessionUpdateView, DeleteSessionView
 from . savers.courier import SaveCourierView
 from . savers.shipping import SaveShippingView
 from . savers.grade import SaveGradeView
-from . savers.level import SaveLevelView, ListLevelView
+from . savers.level import SaveLevelView, ListLevelView, LevelUpdateView,DeleteLevelView
 from . savers.schoolsettings import SaveSchoolSettingView
 from . savers.country import SaveCountryView
 from . savers.state import SaveStateView
@@ -26,7 +26,7 @@ from . search.searchstudentrecords import GetStudentInformationList
 from . savers.studentresults import SaveResultOfStudentsView,GetStudentResultsView
 from . savers.resetApikey import ResetApiKeyView
 from . savers.roles import SaveRolesView
-from . savers.users import SaveUsersView, ListSchoolAccountView
+from . savers.users import SaveUsersView, ListSchoolAccountView, DeleteUsersView
 from . savers.userrole import SaveUsersRoleView, ListUserRolesView
 from . savers.activate import ActivateSchoolView
 from . savers.graduationyear import SaveGraduationYearView,GetStudentSessionsView
@@ -89,6 +89,8 @@ urlpatterns = [
     path('savedepartment/<str:id>/',    ListDepartmentView.as_view()),
     path('savedepartment/departmentlist/<str:id>/<str:fac>/',    SaveDepartmentView.as_view()),
     path('saveprogramme/',    SaveProgrammeView.as_view()),
+    path('saveprogramme/<str:id>/',    ListProgrammeView.as_view()),
+    path('saveprogramme/<str:id>/<str:dept>/',    SaveProgrammeView.as_view()),
     path('savesemester/',    SaveSemesterView.as_view()),
     path('savesemester/<int:session>/<str:id>',    SaveSemesterView.as_view()),
     path('savestudentrecords/',    SaveStudentRecordsView.as_view()),
@@ -138,7 +140,18 @@ urlpatterns = [
     #Generate Transcript
     path('generatetranscript/', GenerateTranscriptView.as_view()),
     path('getresultofstudent/',   GetStudentResultsView.as_view()),
-    
+    #update path
+    path('levelupdate/',   LevelUpdateView.as_view()),
+    path('departmentupdate/',   DepartmentUpdateView.as_view()),
+    path('programmeupdate/',   ProgrammeUpdateView.as_view()),
+    path('sessionupdate/',   SessionUpdateView.as_view()),
+    #Delete path
+    path('deleteuser/<int:id>/', DeleteUsersView.as_view()),
+    path('deletefaculty/<int:id>/', DeleteFacultyView.as_view()),
+    path('deletelevel/<int:id>/', DeleteLevelView.as_view()),
+    path('deletedepartment/<int:id>/', DeleteDepartmentView.as_view()),
+    path('deleteprogramme/<int:id>/', DeleteProgrammeView.as_view()),
+    path('deletesession/<int:id>/', DeleteSessionView.as_view()),
     
     
     path('logout/', LogoutView.as_view()),

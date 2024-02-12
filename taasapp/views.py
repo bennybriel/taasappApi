@@ -5,10 +5,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ObjectDoesNotExist
-from .serializers import UserSerializer, SemesterUploadSerializer, CoursesUploadSerializer,LevelUploadSerializer,GradeUploadSerializer
-from .serializers import FacultyUploadSerializer,DepartmentUploadSerializer, ProgrammeUploadSerializer, StudentRecordsUploadSerializer
-from .serializers import ShippingUploadSerializer, CourierUploadSerializer
-from .serializers import StudentResultsUploadSerializer, State, SessionUploadSerializer,SaveStudentResultsSerializer,SaveResultOfStudentsSerializer
+from .serializers import UserSerializer
+from .serializers import SaveResultOfStudentsSerializer
 from django.views.decorators.csrf import csrf_exempt
 from .models import Users,SchoolSettings, Faculty,Department,Apikeys, Programme,Semester,Courses, Roles, UserRole, Grade,Courier, RolePermissions, Shipping, Level,StudentRecords, StudentResults,Session,ResultOfStudents
 from rest_framework.views import APIView
@@ -79,8 +77,8 @@ class LoginView(APIView):
                 if not user:
                     user = authenticate(username=username, password=password)
                
-                # if not user:
-                #       return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED,message="")
+                if not user:
+                      return Response({'error': 'Invalid credentials', 'message':'INVALID_PASSWORD',}, status=status.HTTP_401_UNAUTHORIZED,) 
 
                 if user:
                     if user.status == False:

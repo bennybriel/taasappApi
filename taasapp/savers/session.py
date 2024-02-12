@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 import datetime
 from drf_yasg.utils import swagger_auto_schema
 from ..authenticateHeader import authenticate_user
-
+from ..checkers import check_session_existence
 class SaveSessionView(APIView):
     serializer_class =SaveSessionSerializer
     @swagger_auto_schema(request_body=SaveSessionSerializer)
@@ -50,7 +50,7 @@ class SaveSessionView(APIView):
                     if not sessionRecords:
                            return Response({'message':'NOT_FOUND','data':list(sessionRecords.values())}) 
                
-                    return Response({'message':'SAVED_SUCCESS','data':list(sessionRecords.values())}) 
+                    return Response({'message':'SAVED_SUCCESS','statuscode':200,'data':list(sessionRecords.values())}) 
               except Exception as e:
                     return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
            
@@ -83,3 +83,51 @@ class GetStudentSessionView(APIView):
                     return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
           
          return Response({'message':'SERVER_ERORR','error':"Server Error", 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)            
+
+
+
+class SessionUpdateView(APIView):
+    serializer_class =SaveSessionSerializer
+    @swagger_auto_schema(request_body=SaveSessionSerializer)
+    def post(self, request):
+         if request.method == 'POST':
+                try:
+                       
+                        name              = request.data['name']
+                        userID            = request.data['userID']
+                        id                = request.data['id']
+                        
+                           
+                        if check_session_existence(request):
+                               return Response({"error": "Session already exists","statuscode": 208,"message": 'ALREADY_EXIST'}, status=status.HTTP_208_ALREADY_REPORTED)
+                               
+                        sess = Session.objects.get(id=id)
+                        sess.name = name
+                        sess.save()
+                        sessionCount =Session.objects.filter(userID = userID).count()
+                        return Response({
+                                    'userID':request.data['userID'],
+                                    'affectedRows':sessionCount, 
+                                    'expireDate':datetime.datetime.now(),
+                                    'statuscode':200,
+                                    'message':'SAVED_SUCCESS',
+                                    }, status=status.HTTP_200_OK)
+                    
+                  
+                except Exception as e:
+                    return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+         
+         return Response({'message':'SERVER_ERORR','error':'Request Method Not Allowed', 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_400_BAD_REQUEST) 
+
+
+class DeleteSessionView(APIView):
+    def delete(self, request, id, format=None):
+        try: 
+          
+            instance = Session.objects.get(id=id)  
+            instance.delete()
+            return Response({'message':'DELETED','error':"Record deleted successfully"}) 
+        except Exception as e:
+             return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+        return Response({'message':'SERVER_ERORR', 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+            

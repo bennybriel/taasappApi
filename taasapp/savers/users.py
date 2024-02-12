@@ -51,20 +51,31 @@ class SaveUsersView(APIView):
             return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
        
         return Response({'message':'SERVER_ERORR','error':serializer.errors}) 
-    
+ 
     def get(self, request, id=None):
          if request.method == 'GET':
              try:       
                     userRecord = Users.objects.filter(userID =id)
-                    serializer = UsersSerializer(userRecord, many=True)
-                    #if serializer.is_valid(raise_exception=True):
-                    return Response({'message':'FETCH_SUCCESS','data':serializer.data,'statuscode':200}) 
+                    return Response({'message':'FETCH_SUCCESS','data':list(userRecord.values()),'statuscode':200}) 
                     #return Response({'message':'SERVER_ERORR','error':serializer.error, 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
              except Exception as e:
                     return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
               
          return Response({'message':'SERVER_ERORR','error':"Server Error", 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
-  
+class DeleteUsersView(APIView):
+    
+    def delete(self, request, id, format=None):
+        try:
+            
+            instance = Users.objects.get(id=id)  
+            instance.delete()
+            return Response({'message':'DELETED','error':"Record deleted successfully", 'expireDate':datetime.datetime.now}) 
+        except Exception as e:
+             return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+      
+        return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+    
+    
 class ListSchoolAccountView(APIView):
        def get(self, request, *args, id=None):
          if request.method == 'GET':

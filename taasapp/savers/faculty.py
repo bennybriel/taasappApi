@@ -49,7 +49,17 @@ class SaveFacultyView(APIView):
     def get(self,request,id=None):
          if request.method == 'GET':
              facultyRecord = Faculty.objects.filter(userID=id)
-             return Response({'message':'SAVED_SUCCESS','data':list(facultyRecord.values())}) 
+             return Response({'message':'SAVED_SUCCESS','statuscode':200,'data':list(facultyRecord.values())}) 
              
            
-        
+class DeleteFacultyView(APIView):
+    def delete(self, request, id, format=None):
+        try: 
+            print(id)          
+            instance = Faculty.objects.get(id=id)  
+            instance.delete()
+            return Response({'message':'DELETED','error':"Record deleted successfully"}) 
+        except Exception as e:
+             return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+        return Response({'message':'SERVER_ERORR', 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+            
