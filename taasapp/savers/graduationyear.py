@@ -56,13 +56,31 @@ class SaveGraduationYearView(APIView):
                     return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
             return Response({'message':'SERVER_ERORR', 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
     def get(self,request,id=None):  
-            try:
+     
                 if request.method == 'GET':
-                    GraduationyearRecords = Graduationyear.objects.filter(userID=id)
-                    return Response({'message':'SAVED_SUCCESS','data':list(GraduationyearRecords.values())}) 
+                     try:    
+                            sql_query = """
+                                SELECT gr.id, gr.year, se.name AS session, se.id
+                                FROM taasapp_graduationyear gr
+                                INNER JOIN taasapp_session se ON gr."sessionID" = se."id"
+                                WHERE gr."userID" = %s
+                                ORDER BY gr.year;
+                    """
+                            with connection.cursor() as cursor:
+                                cursor.execute(sql_query, [id])
+                                if not cursor:
+                                    return Response({'message':'NOT_FOUND','data':cursor}) 
+                                    
+                                results = cursor.fetchall()
+                                    # Process the results as needed
+                                data = [{'id': row[0], 'year': row[1],'session':row[2],'sessionID':row[3]} for row in results]
+                                if data: return Response({'message':'FETCH_SUCCESS','data':data,'statuscode':200}) 
+                                if not data: return Response({'message':'FETCH_SUCCESS','data':data,'statuscode':400}) 
+                    # GraduationyearRecords = Graduationyear.objects.filter(userID=id)
+                    # return Response({'message':'SAVED_SUCCESS','statuscode':200,'data':list(GraduationyearRecords.values())}) 
             
-            except Exception as e:
-                    return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+                     except Exception as e:
+                         return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
 class GetStudentSessionsView(APIView):
        def post(self,request):
          if request.method == 'POST': 
@@ -71,8 +89,7 @@ class GetStudentSessionsView(APIView):
                     entryyear = std.entryyear
                     graduationyear = std.graduationyear
                     userID = request.data["userID"]
-                    print(entryyear)
-                    print(graduationyear)
+                   
                     try:
                         sql_query = """
                         SELECT gd.year, gd.sessionname as session, gd."sessionID" as sessionID FROM taasapp_graduationyear gd
@@ -93,3 +110,51 @@ class GetStudentSessionsView(APIView):
                 return Response({'message':'NOT_FOUND','error':"No Student Record Found", 'expireDate':datetime.datetime.now(), 'statuscode':'404'}, status=status.HTTP_404_NOT_FOUND) 
        
          return Response({'message':'SERVER_ERORR','error':"Server Error", 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+
+
+class GraduationUpdateView(APIView):
+    serializer_class =SaveGraduationYearSerializer
+    @swagger_auto_schema(request_body=SaveGraduationYearSerializer)
+    def post(self, request):
+         if request.method == 'POST':
+                try:
+                        session  = request.data['sessionID']
+                        year     = request.data['year']
+                        userID   = request.data['userID']
+                        id       = request.data['id']
+                        check = Session.objects.filter(id = request.data['sessionID'], userID = request.data['userID'])
+                        if(not check):
+                            return Response({"error":"Session Not Exist","statuscode":404, 'message':'NOT_FOUND', },status=status.HTTP_404_NOT_FOUND)
+
+                        yr = Graduationyear.objects.get(id=id)
+                        yr.year      = year
+                        yr.sessionID = session
+                        yr.userID    = userID
+                        yr.save()
+                        
+                        graduationCount = Graduationyear.objects.filter(userID = request.data['userID']).count()
+                    
+                        return Response({
+                                    'userID':request.data['userID'],
+                                    'affectedRows':graduationCount, 
+                                    'expireDate':datetime.datetime.now(),
+                                    'statuscode':200,
+                                    'message':'SAVED_SUCCESS',
+                                    }, status=status.HTTP_200_OK)
+                    
+                  
+                except Exception as e:
+                    return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+         
+         return Response({'message':'SERVER_ERORR','error':'Request Method Not Allowed', 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_400_BAD_REQUEST) 
+
+class DeleteGraduationView(APIView):
+    def delete(self, request, id, format=None):
+        try:  
+            instance = Graduationyear.objects.get(id=id)  
+            instance.delete()
+            return Response({'message':'DELETED','error':"Record deleted successfully"}) 
+        except Exception as e:
+             return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+        return Response({'message':'SERVER_ERORR', 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+            

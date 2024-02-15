@@ -11,11 +11,11 @@ from . savers.faculty import SaveFacultyView, DeleteFacultyView
 from . savers.faculty import SaveFacultyView
 from . savers.department import SaveDepartmentView, ListDepartmentView,DepartmentUpdateView,DeleteDepartmentView
 from . savers.programme import SaveProgrammeView, ListProgrammeView,ProgrammeUpdateView, DeleteProgrammeView
-from . savers.semester import SaveSemesterView
+from . savers.semester import SaveSemesterView, SemesterUpdateView,DeleteSemesterView, ListSemesterView
 from . savers.studentrecords import SaveStudentRecordsView, GetStudentInformationLists
 from . savers.courses import SaveCoursesView 
 from . savers.session import SaveSessionView, SessionUpdateView, DeleteSessionView
-from . savers.courier import SaveCourierView
+from . savers.courier import SaveCourierView, CourierUpdateView, DeleteCourierView
 from . savers.shipping import SaveShippingView
 from . savers.grade import SaveGradeView
 from . savers.level import SaveLevelView, ListLevelView, LevelUpdateView,DeleteLevelView
@@ -29,8 +29,8 @@ from . savers.roles import SaveRolesView
 from . savers.users import SaveUsersView, ListSchoolAccountView, DeleteUsersView
 from . savers.userrole import SaveUsersRoleView, ListUserRolesView
 from . savers.activate import ActivateSchoolView
-from . savers.graduationyear import SaveGraduationYearView,GetStudentSessionsView
-from . savers.degreeclass import SaveDegreeclassView
+from . savers.graduationyear import SaveGraduationYearView,GetStudentSessionsView, GraduationUpdateView, DeleteGraduationView
+from . savers.degreeclass import SaveDegreeclassView, DegreeUpdateView, DeleteDegreeView
 from . savers.curriculum import SaveCurriculumView, GetStudentCoursesView
 from . savers.semesterresult import SaveSemesterResultView
 from . savers.permission import SavePermissionsView
@@ -93,6 +93,7 @@ urlpatterns = [
     path('saveprogramme/<str:id>/<str:dept>/',    SaveProgrammeView.as_view()),
     path('savesemester/',    SaveSemesterView.as_view()),
     path('savesemester/<int:session>/<str:id>',    SaveSemesterView.as_view()),
+    path('savesemester/<str:id>/',    ListSemesterView.as_view()),
     path('savestudentrecords/',    SaveStudentRecordsView.as_view()),
     path('savescourses/',    SaveCoursesView.as_view()),
     path('savescourses/<str:id>', SaveCoursesView.as_view()),
@@ -101,6 +102,7 @@ urlpatterns = [
     path('savecourier/',    SaveCourierView.as_view()),
     path('savecourier/<str:id>/',    SaveCourierView.as_view()),
     path('saveshipping/',    SaveShippingView.as_view()),
+    path('saveshipping/<str:id>/',    SaveShippingView.as_view()),
     path('savegrade/',    SaveGradeView.as_view()),
     path('savegrade/<str:id>/',    SaveGradeView.as_view()),
     path('savelevel/',    SaveLevelView.as_view()),
@@ -145,6 +147,10 @@ urlpatterns = [
     path('departmentupdate/',   DepartmentUpdateView.as_view()),
     path('programmeupdate/',   ProgrammeUpdateView.as_view()),
     path('sessionupdate/',   SessionUpdateView.as_view()),
+    path('semesterupdate/',   SemesterUpdateView.as_view()),
+    path('degreeclassupdate/', DegreeUpdateView.as_view()),
+    path('graduationupdate/', GraduationUpdateView.as_view()),
+    path('courierupdate/', CourierUpdateView.as_view()),
     #Delete path
     path('deleteuser/<int:id>/', DeleteUsersView.as_view()),
     path('deletefaculty/<int:id>/', DeleteFacultyView.as_view()),
@@ -152,7 +158,10 @@ urlpatterns = [
     path('deletedepartment/<int:id>/', DeleteDepartmentView.as_view()),
     path('deleteprogramme/<int:id>/', DeleteProgrammeView.as_view()),
     path('deletesession/<int:id>/', DeleteSessionView.as_view()),
-    
+    path('deletesemester/<int:id>/', DeleteSemesterView.as_view()),
+    path('deletedegreeclass/<int:id>/', DeleteDegreeView.as_view()),
+    path('deletegraduation/<int:id>/', DeleteGraduationView.as_view()),
+    path('deletecourier/<int:id>/', DeleteCourierView.as_view()),
     
     path('logout/', LogoutView.as_view()),
     path('login-with-otp/', LoginWithOTP.as_view(), name='login-with-otp'),

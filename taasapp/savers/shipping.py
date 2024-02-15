@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 import datetime
 from drf_yasg.utils import swagger_auto_schema
+from django.db import connection
+from ..utils import dictfetchall
 
 class SaveShippingView(APIView):
     serializer_class =SaveShippingSerializer
@@ -43,3 +45,30 @@ class SaveShippingView(APIView):
                 return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        
+    def get(self,request,id=None):  
+            try:
+                if request.method == 'GET':
+                     sql_query = """
+                        SELECT sh.id, co.name AS courier, co.id as courierID, sh.location,sh.cost,co.email,co.phone,co.address,ct.name as country
+                        FROM taasapp_shipping sh
+                        INNER JOIN taasapp_courier co ON sh."courierID" = co."id"
+                        INNER JOIN taasapp_country ct ON ct."id" = sh."countryID"
+                        WHERE sh."userID" = %s
+                        ORDER BY co.name;
+                    """
+                with connection.cursor() as cursor:
+                    cursor.execute(sql_query, [id])
+                    if not cursor:
+                        return Response({'message':'NOT_FOUND','data':cursor}) 
+                        
+                    results = cursor.fetchall()
+                        # Process the results as needed
+                    data = [{'id': row[0], 'courier': row[1],'courierID':row[2],'location':row[3],'cost':row[4],'email':row[5], 'phone':row[6],'country':row[7]} for row in results]
+                    if data: return Response({'message':'FETCH_SUCCESS','data':data,'statuscode':200}) 
+                    if not data: return Response({'message':'FETCH_SUCCESS','data':data,'statuscode':400}) 
+
+            
+            except Exception as e:
+                    return Response({'message':'SERVER_ERORR','error':repr(e), 'expireDate':datetime.datetime.now(), 'statuscode':'500'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+ 
